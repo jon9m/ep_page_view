@@ -425,7 +425,7 @@ reDrawPageBreaks = function(){
       // If it's not already a page break append a page break
       if(!isAlreadyPageBreak){
         // console.log("Adding break as PX since last break is ", pxSinceLastBreak + height);
-        $(this).append("<div class='pageBreakComputed' contentEditable=false></div>");
+        $(this).append("<div class='pageBreakComputed' contentEditable=false><br></div>");
         // console.log("AUTOMATIC pxSinceLastBreak", pxSinceLastBreak, "height", height);
         pages.push(pxSinceLastBreak + height);
 
