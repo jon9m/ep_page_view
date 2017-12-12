@@ -199,6 +199,7 @@ exports.aceAttribsToClasses = function(hook, context){
 *
 ***/
 exports.aceDomLineProcessLineAttributes = function(name, context){
+
   if( context.cls.indexOf("pageBreak") !== -1) { var type="pageBreak"; }
   var tagIndex = context.cls.indexOf(type);
   if (tagIndex !== undefined && type){
@@ -383,20 +384,22 @@ reDrawPageBreaks = function(){
 
     // How many PX since last break?
     var lastLine = lineNumber-1;
+    var pxSinceLastBreak = 0;
 
     // Note that this is written like this because I don't trust using y offsets..
     if(!lines[lastLine]){ // if this is the first line..
-      // console.log("First line");
       var previousY = 0;
-      var pxSinceLastBreak = 0;
+      pxSinceLastBreak = 0;
+      
     }else{ // we're not processing the first line
+      
       if(lines[lastLine].pxSinceLastBreak == 0){ // if it's the second line..
         // if it's getting the px of the first line..
         var previousY = lines[lastLine].height;
       }else{
         var previousY = lines[lastLine].pxSinceLastBreak;
       }
-      var pxSinceLastBreak = previousY + height;
+        pxSinceLastBreak = previousY + height;
     }
 
     // Does it already have any children with teh class pageBreak?
@@ -408,17 +411,19 @@ reDrawPageBreaks = function(){
     // If it's a manualBreak then reset pxSinceLastBreak to 0;
     if(manualBreak){
       pxSinceLastBreak = 0;
-      // console.log("MANUAL pxSinceLastBreak", pxSinceLastBreak, "height", height);
       pages.push(pxSinceLastBreak + height);
     }
 
     // Should this be a line break?
+    if(manualBreak){
+      height = 0;
+    }
     var computedBreak = ((pxSinceLastBreak + height) >= yHeight);
     if(computedBreak){
-      // console.log(id, "should be a page break");
+      // console.log(id, "should be a page break: " + pxSinceLastBreak + " height: " + height + ": total " +(pxSinceLastBreak + height));
 
       // is it already a page break?
-      var isAlreadyPageBreak = $(this).find(".pageBreakComputed").length != 0;
+      var isAlreadyPageBreak = $(this).find(".pageBreakComputed").length != 0 || $(this).find(".pageBreak").length != 0;
 
       // console.log( "iPB", isAlreadyPageBreak );
 
@@ -444,8 +449,43 @@ reDrawPageBreaks = function(){
     lineNumber++;
   });
 
+  //check for computd page breaks
+   checkCoputedNearManualPB(HTMLLines, lines, lineNumber);
+
   // Debuggable object containing all lines status
   // if(lines) console.log("Lines", lines);
   // if(pages) console.log("Pages", pages);
+}
 
+//One more nail...
+checkCoputedNearManualPB = function (HTMLLines, lines, lineNumber) {
+  var lineCount = 0;
+  if ((lines == null) || (lineNumber <= 0)) {
+    return;
+  }
+  $(HTMLLines).each(function () {
+    var currLineCount = lineCount;
+    lineCount++;
+    var currLine = lines[currLineCount];
+
+    if (currLine) {
+      if ((currLine.computedBreak) && (currLine.computedBreak == true)) {
+        var nextLine = lines[currLineCount + 1];
+        if (nextLine) {
+          if ((nextLine.manualBreak) && (nextLine.manualBreak == true)) {
+            //remove computed break style at curent line
+            $(this).children(".pageBreakComputed").remove();
+          } else {
+            return true;
+          }
+        } else {
+          return true;
+        }
+      } else {
+        return true;
+      }
+    } else {
+      return true;
+    }
+  });
 }
