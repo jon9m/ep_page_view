@@ -501,25 +501,23 @@ checkCoputedNearManualPB = function (HTMLLines, lines, lineNumber) {
 }
 
 checkPageNumber = function () {
-
   var HTMLLines = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div");
   var pagenumber = 1;
-
   var lineCount = 0;
   if (HTMLLines == null) {
     return;
   }
 
   $('iframe[name="ace_outer"]').contents().find('#sidedivinner div[linenumber]').children('div').remove();
-  var pageNumberX = getPageWidthX();
+  var pageWidthX = getPageWidthX();
 
   $(HTMLLines).each(function () {
-    // var computedBreak = $(this).children().hasClass("pageBreakComputed");
+    var computedBreak = $(this).children().hasClass("pageBreakComputed");
     var manualBreak = $(this).children().hasClass("pageBreak");
 
-    if(manualBreak){
-      var pbDiv = $('iframe[name="ace_outer"]').contents().find('#sidedivinner div[linenumber="'+lineCount+'"]');
-      $(pbDiv).append("<div style='position:absolute;left:"+pageNumberX+"px;bottom:130px;'>Page "+ pagenumber +"</div>");
+    if (manualBreak || computedBreak) {
+      var pbDiv = $('iframe[name="ace_outer"]').contents().find('#sidedivinner div[linenumber="' + lineCount + '"]');
+      $(pbDiv).append("<div style='position:absolute;left:" + pageWidthX + "px;bottom:130px;'>Page " + pagenumber + "</div>");
       pagenumber++;
     }
     lineCount++;
@@ -527,8 +525,8 @@ checkPageNumber = function () {
 }
 
 getPageWidthX = function () {
-  if (!pageWidthX || (pageWidthX <= 1)) {
+  // if (!pageWidthX || (pageWidthX <= 1)) {
     pageWidthX = $('iframe[name="ace_outer"]').contents().find('iframe[name="ace_inner"]').width() * 0.9;
-  }
+  // }
   return pageWidthX;
 }
